@@ -19,7 +19,7 @@ AutoWhitelistRemove is a super simple plugin to remove players from your whiteli
 * Export removed players to a file.
 
 ## Documentation
-Visit the [wiki](https://docs.hyper.lol/autowhitelistremove) for help.
+Visit the [wiki](https://github.com/hyperdefined/AutoWhitelistRemove/wiki) for help.
 
 ## License
 This plugin is released under GNU General Public License v3. See [LICENSE](https://github.com/hyperdefined/AutoWhitelistRemove/blob/master/LICENSE).
