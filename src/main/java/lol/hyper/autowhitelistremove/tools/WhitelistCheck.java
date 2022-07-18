@@ -61,10 +61,17 @@ public class WhitelistCheck {
      */
     public Set<String> checkWhitelist(boolean actuallyRemove) {
         String inactivePeriod = autoWhitelistRemove.config.getString("inactive-period");
+        if (inactivePeriod == null) {
+            autoWhitelistRemove.logger.warning("inactive-period is NOT SET!");
+            return null;
+        }
         String timeType = inactivePeriod.substring(inactivePeriod.length() - 1);
         Set<String> removedPlayers = new HashSet<>();
         Set<UUID> removedPlayersUUID = new HashSet<>();
+        autoWhitelistRemove.logger.info("Checking for inactive players...");
+        autoWhitelistRemove.logger.info("Current duration is set to " + inactivePeriod);
 
+        int removedPlayersCounter = 0;
         // go through each of the players on the whitelist
         for (OfflinePlayer offlinePlayer : Bukkit.getWhitelistedPlayers()) {
             UUID uuid = offlinePlayer.getUniqueId();
@@ -94,6 +101,7 @@ public class WhitelistCheck {
                                     + " from the whitelist! They haven't played in over " + duration
                                     + " weeks! Last online: " + weeksBetween + " weeks ago.");
                             offlinePlayer.setWhitelisted(false);
+                            removedPlayersCounter++;
                         }
                         removedPlayers.add(playerUsername);
                         removedPlayersUUID.add(uuid);
@@ -110,6 +118,7 @@ public class WhitelistCheck {
                                     + " from the whitelist! They haven't played in over " + duration
                                     + " days! Last online: " + daysBetween + " days ago.");
                             offlinePlayer.setWhitelisted(false);
+                            removedPlayersCounter++;
                         }
                         removedPlayers.add(playerUsername);
                         removedPlayersUUID.add(uuid);
@@ -126,6 +135,7 @@ public class WhitelistCheck {
                                     + " from the whitelist! They haven't played in over " + duration
                                     + " months! Last online: " + monthsBetween + " months ago.");
                             offlinePlayer.setWhitelisted(false);
+                            removedPlayersCounter++;
                         }
                         removedPlayers.add(playerUsername);
                         removedPlayersUUID.add(uuid);
@@ -139,6 +149,12 @@ public class WhitelistCheck {
                 }
             }
         }
+        if (actuallyRemove) {
+            autoWhitelistRemove.logger.info("Removed " + removedPlayersCounter + " players.");
+        } else {
+            autoWhitelistRemove.logger.info(removedPlayersCounter + " players can be removed.");
+        }
+
         // export the removed players if we actually removed any
         if (!removedPlayers.isEmpty() && actuallyRemove) {
             if (autoWhitelistRemove.config.getBoolean("save-whitelist-removals")) {

@@ -18,7 +18,10 @@
 package lol.hyper.autowhitelistremove.command;
 
 import lol.hyper.autowhitelistremove.AutoWhitelistRemove;
-import net.md_5.bungee.api.ChatColor;
+import lol.hyper.autowhitelistremove.tools.WhitelistCheck;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -32,81 +35,84 @@ import java.util.Set;
 public class CommandAWR implements TabExecutor {
 
     private final AutoWhitelistRemove autoWhitelistRemove;
+    private final WhitelistCheck whitelistCheck;
+    private final BukkitAudiences audiences;
 
     public CommandAWR(AutoWhitelistRemove autoWhitelistRemove) {
         this.autoWhitelistRemove = autoWhitelistRemove;
+        this.whitelistCheck = autoWhitelistRemove.whitelistCheck;
+        this.audiences = autoWhitelistRemove.getAdventure();
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (args.length == 1) {
-            switch (args[0]) {
-                case "check": {
-                    if (!sender.hasPermission("autowhitelistremove.check")) {
-                        sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
-                    } else {
-                        Set<String> removedPlayers = autoWhitelistRemove.whitelistCheck.checkWhitelist(false);
-                        sender.sendMessage(ChatColor.GOLD + "--------------------AWR---------------------");
-                        if (removedPlayers.isEmpty()) {
-                            sender.sendMessage(ChatColor.YELLOW + "No players to remove.");
+        switch (args.length) {
+            case 1: {
+                switch (args[0]) {
+                    case "check": {
+                        if (!sender.hasPermission("autowhitelistremove.check")) {
+                            audiences.sender(sender).sendMessage(Component.text("You do not have permission for this command.").color(NamedTextColor.RED));
                         } else {
-                            // the valueOf is there because it thinks we are adding the chatcolor and size
-                            sender.sendMessage(ChatColor.YELLOW + String.valueOf(removedPlayers.size())
-                                    + " players will be removed. Type \"/awr check confirm\" to confirm the removal.");
-                            sender.sendMessage(ChatColor.YELLOW + String.join(", ", removedPlayers));
+                            Set<String> removedPlayers = whitelistCheck.checkWhitelist(false);
+                            audiences.sender(sender).sendMessage(Component.text("--------------------AWR---------------------").color(NamedTextColor.GOLD));
+                            if (removedPlayers.isEmpty()) {
+                                audiences.sender(sender).sendMessage(Component.text("No players to remove.").color(NamedTextColor.YELLOW));
+                            } else {
+                                audiences.sender(sender).sendMessage(Component.text(removedPlayers.size() + " players will be removed. Type \"/awr check confirm\" to confirm the removal.").color(NamedTextColor.YELLOW));
+                                audiences.sender(sender).sendMessage(Component.text(String.join(", ", removedPlayers)).color(NamedTextColor.YELLOW));
+                            }
+                            audiences.sender(sender).sendMessage(Component.text("--------------------------------------------").color(NamedTextColor.GOLD));
                         }
-                        sender.sendMessage(ChatColor.GOLD + "--------------------------------------------");
+                        return true;
                     }
-                    return true;
-                }
-                case "reload": {
-                    if (!sender.hasPermission("autowhitelistremove.reload")) {
-                        sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
-                    } else {
-                        autoWhitelistRemove.loadConfig();
-                        sender.sendMessage(ChatColor.GREEN + "Config reloaded!");
+                    case "reload": {
+                        if (!sender.hasPermission("autowhitelistremove.reload")) {
+                            audiences.sender(sender).sendMessage(Component.text("You do not have permission for this command.").color(NamedTextColor.RED));
+                        } else {
+                            autoWhitelistRemove.loadConfig();
+                            audiences.sender(sender).sendMessage(Component.text("Config reloaded!").color(NamedTextColor.GREEN));
+                        }
+                        return true;
                     }
-                    return true;
-                }
-                default: {
-                    sender.sendMessage(ChatColor.GOLD + "--------------------AWR---------------------");
-                    sender.sendMessage(ChatColor.GOLD + "/awr help " + ChatColor.YELLOW + "- Shows this menu.");
-                    sender.sendMessage(ChatColor.GOLD + "/awr check " + ChatColor.YELLOW
-                            + "- Check inactive players and remove them.");
-                    sender.sendMessage(ChatColor.GOLD + "/awr reload " + ChatColor.YELLOW + "- Reload the config.");
-                    sender.sendMessage(ChatColor.GOLD + "--------------------------------------------");
-                    return true;
+                    default: {
+                        audiences.sender(sender).sendMessage(Component.text("--------------------AWR---------------------").color(NamedTextColor.GOLD));
+                        audiences.sender(sender).sendMessage(Component.text("/awr help ").color(NamedTextColor.GOLD).append(Component.text("- Shows this menu.").color(NamedTextColor.YELLOW)));
+                        audiences.sender(sender).sendMessage(Component.text("/awr check ").color(NamedTextColor.GOLD).append(Component.text("- Check inactive players and remove them.").color(NamedTextColor.YELLOW)));
+                        audiences.sender(sender).sendMessage(Component.text("/awr help ").color(NamedTextColor.GOLD).append(Component.text("- Reload the config.").color(NamedTextColor.YELLOW)));
+                        audiences.sender(sender).sendMessage(Component.text("--------------------------------------------").color(NamedTextColor.GOLD));
+                        return true;
+                    }
                 }
             }
-        }
-        if (args.length == 2) {
-            if ("confirm".equalsIgnoreCase(args[1])) {
-                if (sender.hasPermission("autowhitelistremove.check")) {
-                    Set<String> removedPlayers = autoWhitelistRemove.whitelistCheck.checkWhitelist(true);
-                    sender.sendMessage(ChatColor.GOLD + "--------------------AWR---------------------");
-                    // the valueOf is there because it thinks we are adding the chatcolor and size
-                    sender.sendMessage(
-                            ChatColor.YELLOW + String.valueOf(removedPlayers.size()) + " players have been removed.");
-                    sender.sendMessage(ChatColor.YELLOW + String.join(", ", removedPlayers));
-                    sender.sendMessage(ChatColor.GOLD + "--------------------------------------------");
-                } else {
-                    sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
+            case 2: {
+                if ("confirm".equalsIgnoreCase(args[1])) {
+                    if (sender.hasPermission("autowhitelistremove.check")) {
+                        Set<String> removedPlayers = whitelistCheck.checkWhitelist(true);
+                        audiences.sender(sender).sendMessage(Component.text("--------------------AWR---------------------").color(NamedTextColor.GOLD));
+                        if (removedPlayers.isEmpty()) {
+                            audiences.sender(sender).sendMessage(Component.text("No players to remove.").color(NamedTextColor.YELLOW));
+                        } else {
+                            audiences.sender(sender).sendMessage(Component.text(removedPlayers.size() + " players have been removed.").color(NamedTextColor.YELLOW));
+                            audiences.sender(sender).sendMessage(Component.text(String.join(", ", removedPlayers)).color(NamedTextColor.YELLOW));
+                        }
+                        audiences.sender(sender).sendMessage(Component.text("--------------------------------------------").color(NamedTextColor.GOLD));
+                    } else {
+                        audiences.sender(sender).sendMessage(Component.text("You do not have permission for this command.").color(NamedTextColor.RED));
+                    }
+                    return true;
                 }
+                audiences.sender(sender).sendMessage(Component.text("--------------------AWR---------------------").color(NamedTextColor.GOLD));
+                audiences.sender(sender).sendMessage(Component.text("/awr help ").color(NamedTextColor.GOLD).append(Component.text("- Shows this menu.").color(NamedTextColor.YELLOW)));
+                audiences.sender(sender).sendMessage(Component.text("/awr check ").color(NamedTextColor.GOLD).append(Component.text("- Check inactive players and remove them.").color(NamedTextColor.YELLOW)));
+                audiences.sender(sender).sendMessage(Component.text("/awr help ").color(NamedTextColor.GOLD).append(Component.text("- Reload the config.").color(NamedTextColor.YELLOW)));
+                audiences.sender(sender).sendMessage(Component.text("--------------------------------------------").color(NamedTextColor.GOLD));
                 return true;
             }
-            sender.sendMessage(ChatColor.GOLD + "--------------------AWR---------------------");
-            sender.sendMessage(ChatColor.GOLD + "/awr help " + ChatColor.YELLOW + "- Shows this menu.");
-            sender.sendMessage(
-                    ChatColor.GOLD + "/awr check " + ChatColor.YELLOW + "- Check which players are inactive.");
-            sender.sendMessage(ChatColor.GOLD + "/awr check confirm" + ChatColor.YELLOW
-                    + "- Confirm removal of inactive players.");
-            sender.sendMessage(ChatColor.GOLD + "/awr reload " + ChatColor.YELLOW + "- Reload the config.");
-            sender.sendMessage(ChatColor.GOLD + "--------------------------------------------");
-            return true;
+            default: {
+                audiences.sender(sender).sendMessage(Component.text("AutoWhitelistRemove version " + autoWhitelistRemove.getDescription().getVersion() + ". Created by hyperdefined.").color(NamedTextColor.GREEN));
+                return true;
+            }
         }
-        sender.sendMessage(ChatColor.GREEN + "AutoWhitelistRemove version "
-                + autoWhitelistRemove.getDescription().getVersion() + ". Created by hyperdefined.");
-        return true;
     }
 
     @Override
