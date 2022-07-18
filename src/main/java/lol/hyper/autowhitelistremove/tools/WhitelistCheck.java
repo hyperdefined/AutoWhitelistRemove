@@ -66,18 +66,18 @@ public class WhitelistCheck {
         Set<UUID> removedPlayersUUID = new HashSet<>();
 
         // go through each of the players on the whitelist
-        for (OfflinePlayer player : Bukkit.getWhitelistedPlayers()) {
-            UUID uuid = player.getUniqueId();
-            String playerUsername = player.getName();
+        for (OfflinePlayer offlinePlayer : Bukkit.getWhitelistedPlayers()) {
+            UUID uuid = offlinePlayer.getUniqueId();
+            String playerUsername = offlinePlayer.getName();
 
             // skip players that have not logged in
-            if (!player.hasPlayedBefore() || player.getLastPlayed() == 0) {
+            if (!offlinePlayer.hasPlayedBefore() || offlinePlayer.getLastPlayed() == 0) {
                 autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " since they have not played yet.");
                 continue;
             }
 
             // get when they lasted played
-            Date lastPlayed = new Date(player.getLastPlayed());
+            Date lastPlayed = new Date(offlinePlayer.getLastPlayed());
             // get how long they have to be offline
             int duration = Integer.parseInt(inactivePeriod.substring(0, inactivePeriod.length() - 1));
 
@@ -86,14 +86,14 @@ public class WhitelistCheck {
             switch (timeType) {
                 case "w": {
                     // calc how many weeks they haven't played for
-                    long weeksBetween = getWeeks(lastPlayed, new Date());
+                    long weeksBetween = getWeeksBetween(lastPlayed, new Date());
                     // if they are too inactive, remove them
                     if (weeksBetween >= duration) {
                         if (actuallyRemove) {
                             autoWhitelistRemove.logger.info("Removing player " + playerUsername
                                     + " from the whitelist! They haven't played in over " + duration
                                     + " weeks! Last online: " + weeksBetween + " weeks ago.");
-                            removePlayerFromWhitelist(playerUsername);
+                            offlinePlayer.setWhitelisted(false);
                         }
                         removedPlayers.add(playerUsername);
                         removedPlayersUUID.add(uuid);
@@ -102,14 +102,14 @@ public class WhitelistCheck {
                 }
                 case "d": {
                     // calc how many days they haven't played for
-                    long daysBetween = getDays(lastPlayed, new Date());
+                    long daysBetween = getDaysBetween(lastPlayed, new Date());
                     // if they are too inactive, remove them
                     if (daysBetween >= duration) {
                         if (actuallyRemove) {
                             autoWhitelistRemove.logger.info("Removing player " + playerUsername
                                     + " from the whitelist! They haven't played in over " + duration
                                     + " days! Last online: " + daysBetween + " days ago.");
-                            removePlayerFromWhitelist(playerUsername);
+                            offlinePlayer.setWhitelisted(false);
                         }
                         removedPlayers.add(playerUsername);
                         removedPlayersUUID.add(uuid);
@@ -118,14 +118,14 @@ public class WhitelistCheck {
                 }
                 case "m": {
                     // calc how many months they haven't played for
-                    long monthsBetween = getMonths(lastPlayed, new Date());
+                    long monthsBetween = getMonthsBetween(lastPlayed, new Date());
                     // if they are too inactive, remove them
                     if (monthsBetween >= duration) {
                         if (actuallyRemove) {
                             autoWhitelistRemove.logger.info("Removing player " + playerUsername
                                     + " from the whitelist! They haven't played in over " + duration
                                     + " months! Last online: " + monthsBetween + " months ago.");
-                            removePlayerFromWhitelist(playerUsername);
+                            offlinePlayer.setWhitelisted(false);
                         }
                         removedPlayers.add(playerUsername);
                         removedPlayersUUID.add(uuid);
@@ -155,7 +155,7 @@ public class WhitelistCheck {
      * @param d2 The more recent date.
      * @return The total weeks that have passed.
      */
-    public long getWeeks(Date d1, Date d2) {
+    public long getWeeksBetween(Date d1, Date d2) {
         return ChronoUnit.WEEKS.between(
                 d1.toInstant().atZone(ZoneId.systemDefault()), d2.toInstant().atZone(ZoneId.systemDefault()));
     }
@@ -167,7 +167,7 @@ public class WhitelistCheck {
      * @param d2 The more recent date.
      * @return The total days that have passed.
      */
-    public long getDays(Date d1, Date d2) {
+    public long getDaysBetween(Date d1, Date d2) {
         return ChronoUnit.DAYS.between(
                 d1.toInstant().atZone(ZoneId.systemDefault()), d2.toInstant().atZone(ZoneId.systemDefault()));
     }
@@ -179,19 +179,9 @@ public class WhitelistCheck {
      * @param d2 The more recent date.
      * @return The total months that have passed.
      */
-    public long getMonths(Date d1, Date d2) {
+    public long getMonthsBetween(Date d1, Date d2) {
         return ChronoUnit.MONTHS.between(
                 d1.toInstant().atZone(ZoneId.systemDefault()), d2.toInstant().atZone(ZoneId.systemDefault()));
-    }
-
-    /**
-     * Remove a player from the whitelist. There is no way in the API to do this, so we just run the command.
-     * Not the best way, but it can be automated this method.
-     *
-     * @param name The player to remove from whitelist.
-     */
-    private void removePlayerFromWhitelist(String name) {
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "whitelist remove " + name);
     }
 
     /**
