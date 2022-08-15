@@ -46,6 +46,10 @@ public class CommandAWR implements TabExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+        if (!sender.hasPermission("autowhitelistremove.command")) {
+            audiences.sender(sender).sendMessage(Component.text("You do not have permission for this command.").color(NamedTextColor.RED));
+            return true;
+        }
         switch (args.length) {
             case 1: {
                 switch (args[0]) {
@@ -86,7 +90,7 @@ public class CommandAWR implements TabExecutor {
             }
             case 2: {
                 if ("confirm".equalsIgnoreCase(args[1])) {
-                    if (sender.hasPermission("autowhitelistremove.check")) {
+                    if (sender.hasPermission("autowhitelistremove.check.confirm")) {
                         Set<String> removedPlayers = whitelistCheck.checkWhitelist(true);
                         audiences.sender(sender).sendMessage(Component.text("--------------------AWR---------------------").color(NamedTextColor.GOLD));
                         if (removedPlayers.isEmpty()) {

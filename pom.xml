@@ -23,7 +23,7 @@
 
     <groupId>lol.hyper</groupId>
     <artifactId>autowhitelistremove</artifactId>
-    <version>1.2</version>
+    <version>1.2.1</version>
     <packaging>jar</packaging>
 
     <name>AutoWhitelistRemove</name>
@@ -131,7 +131,7 @@
         <dependency>
             <groupId>lol.hyper</groupId>
             <artifactId>github-release-api</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
