@@ -52,7 +52,7 @@ public class CommandAWR implements TabExecutor {
             return true;
         }
 
-        if (args.length == 0 || sender instanceof ConsoleCommandSender) {
+        if (args.length == 0) {
             audiences.sender(sender).sendMessage(Component.text("AutoWhitelistRemove version " + autoWhitelistRemove.getDescription().getVersion() + ". Created by hyperdefined.").color(NamedTextColor.GREEN));
             return true;
         }
