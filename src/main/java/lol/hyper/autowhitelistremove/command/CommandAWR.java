@@ -68,6 +68,7 @@ public class CommandAWR implements TabExecutor {
                 if (args.length == 2) {
                     if (!args[1].equalsIgnoreCase("confirm")) {
                         audiences.sender(sender).sendMessage(Component.text("Invalid usage. See /awr help.").color(NamedTextColor.RED));
+                        return true;
                     }
 
                     if (!sender.hasPermission("autowhitelistremove.check.confirm")) {
