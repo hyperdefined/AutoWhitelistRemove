@@ -63,7 +63,7 @@ public final class AutoWhitelistRemove extends JavaPlugin {
             this.saveResource("config.yml", true);
         }
         config = YamlConfiguration.loadConfiguration(configFile);
-        int CONFIG_VERSION = 1;
+        int CONFIG_VERSION = 2;
         if (config.getInt("config-version") != CONFIG_VERSION) {
             logger.warning("Your configuration is out of date! Some features may not work!");
         }

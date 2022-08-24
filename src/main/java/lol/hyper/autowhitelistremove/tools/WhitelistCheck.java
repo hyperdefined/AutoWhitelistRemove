@@ -83,6 +83,12 @@ public class WhitelistCheck {
                 continue;
             }
 
+            // skip players that are ignored
+            if (autoWhitelistRemove.config.getStringList("ignored-players").contains(uuid.toString())) {
+                autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " because they are on the ignored list.");
+                continue;
+            }
+
             // get when they lasted played
             Date lastPlayed = new Date(offlinePlayer.getLastPlayed());
             // get how long they have to be offline

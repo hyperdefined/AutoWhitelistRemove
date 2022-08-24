@@ -1,3 +1,8 @@
+# List any players that will bypass the checks.
+# This list has to be UUIDs!
+ignored-players:
+  - "311be5cd-d17c-49b3-bf47-f781fdbcc929"
+
 # Specify how long a player has to be offline in order to remove them.
 # d - Days
 # w - weeks
@@ -13,4 +18,4 @@ autoremove-on-start: true
 # This will create removals.json
 save-whitelist-removals: true
 
-config-version: 1
+config-version: 2
