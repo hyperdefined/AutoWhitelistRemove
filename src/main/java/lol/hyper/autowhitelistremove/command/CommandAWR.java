@@ -70,7 +70,7 @@ public class CommandAWR implements TabExecutor {
                         audiences.sender(sender).sendMessage(Component.text("Invalid usage. See /awr help.").color(NamedTextColor.RED));
                     }
 
-                    if (sender.hasPermission("autowhitelistremove.check.confirm")) {
+                    if (!sender.hasPermission("autowhitelistremove.check.confirm")) {
                         audiences.sender(sender).sendMessage(Component.text("You do not have permission for this command.").color(NamedTextColor.RED));
                         return true;
                     }
@@ -94,8 +94,8 @@ public class CommandAWR implements TabExecutor {
                 } else {
                     audiences.sender(sender).sendMessage(Component.text(removedPlayers.size() + " players will be removed. Type \"/awr check confirm\" to confirm the removal.").color(NamedTextColor.YELLOW));
                     audiences.sender(sender).sendMessage(Component.text(String.join(", ", removedPlayers)).color(NamedTextColor.YELLOW));
-                    audiences.sender(sender).sendMessage(Component.text("--------------------------------------------").color(NamedTextColor.GOLD));
                 }
+                audiences.sender(sender).sendMessage(Component.text("--------------------------------------------").color(NamedTextColor.GOLD));
                 break;
             }
             case "reload": {
@@ -120,10 +120,9 @@ public class CommandAWR implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String
-            alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("check")) {
+            if (args[0].equalsIgnoreCase("check") && sender.hasPermission("autowhitelistremove.check.confirm")) {
                 return Collections.singletonList("confirm");
             }
         }
