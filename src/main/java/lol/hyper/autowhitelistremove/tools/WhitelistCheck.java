@@ -120,6 +120,10 @@ public class WhitelistCheck {
         for (OfflinePlayer offlinePlayer : playersToRemove) {
             offlinePlayer.setWhitelisted(false);
         }
+
+        if (autoWhitelistRemove.config.getBoolean("save-whitelist-removals")) {
+            exportPlayers(playersToRemove);
+        }
     }
 
     /**
@@ -270,7 +274,7 @@ public class WhitelistCheck {
      *
      * @param players Players to export.
      */
-    private void exportPlayers(Set<UUID> players) {
+    private void exportPlayers(Set<OfflinePlayer> players) {
         JSONArray array;
         if (autoWhitelistRemove.removalsFile.exists()) {
             array = readFile(autoWhitelistRemove.removalsFile);
@@ -280,10 +284,10 @@ public class WhitelistCheck {
         Date date = Calendar.getInstance().getTime();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         String strDate = dateFormat.format(date);
-        for (UUID player : players) {
+        for (OfflinePlayer player : players) {
             JSONObject object = new JSONObject();
-            object.put("name", Bukkit.getOfflinePlayer(player).getName());
-            object.put("uuid", player);
+            object.put("name", player.getName());
+            object.put("uuid", player.getUniqueId());
             object.put("date", strDate);
             array.put(object);
         }
