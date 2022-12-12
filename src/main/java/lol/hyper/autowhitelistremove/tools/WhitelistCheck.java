@@ -55,24 +55,22 @@ public class WhitelistCheck {
     /**
      * Check the whitelist and remove players if they are too inactive.
      *
-     * @param actuallyRemove Do you actually want to remove these players? Set true to remove them, false if you
-     *                       just want to query how many would be removed.
      * @return A set of players removed/to be removed.
      */
     public Set<String> checkWhitelist(boolean actuallyRemove) {
+        Set<String> inactivePlayersName = new HashSet<>();
+        Set<OfflinePlayer> inactivePlayers = new HashSet<>();
+
         String inactivePeriod = autoWhitelistRemove.config.getString("inactive-period");
         if (inactivePeriod == null) {
             autoWhitelistRemove.logger.warning("inactive-period is NOT SET!");
             return null;
         }
-        String timeType = inactivePeriod.substring(inactivePeriod.length() - 1);
-        Set<String> removedPlayers = new HashSet<>();
-        Set<UUID> removedPlayersUUID = new HashSet<>();
         autoWhitelistRemove.logger.info("Checking for inactive players...");
         autoWhitelistRemove.logger.info("Current duration is set to " + inactivePeriod);
 
-        int removedPlayersCounter = 0;
-        // go through each of the players on the whitelist
+        int inactivePlayersCounter = 0;
+        // go through each player on the whitelist
         for (OfflinePlayer offlinePlayer : Bukkit.getWhitelistedPlayers()) {
             UUID uuid = offlinePlayer.getUniqueId();
             String playerUsername = offlinePlayer.getName();
@@ -83,91 +81,45 @@ public class WhitelistCheck {
                 continue;
             }
 
-            // skip players that are ignored
+            // skip if their UUID is on the ignored list
             if (autoWhitelistRemove.config.getStringList("ignored-players").contains(uuid.toString())) {
                 autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " because they are on the ignored list.");
                 continue;
             }
 
-            // get when they lasted played
-            Date lastPlayed = new Date(offlinePlayer.getLastPlayed());
-            // get how long they have to be offline
-            int duration = Integer.parseInt(inactivePeriod.substring(0, inactivePeriod.length() - 1));
+            // skip if their name is on the ignored list
+            if (autoWhitelistRemove.config.getStringList("ignored-players").contains(playerUsername)) {
+                autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " because they are on the ignored list.");
+                continue;
+            }
 
-            // check if we are using weeks or days for the time period
-            // there is probably a better way of doing this, but this is a safe way
-            switch (timeType) {
-                case "w": {
-                    // calc how many weeks they haven't played for
-                    long weeksBetween = getWeeksBetween(lastPlayed, new Date());
-                    // if they are too inactive, remove them
-                    if (weeksBetween >= duration) {
-                        if (actuallyRemove) {
-                            autoWhitelistRemove.logger.info("Removing player " + playerUsername
-                                    + " from the whitelist! They haven't played in over " + duration
-                                    + " weeks! Last online: " + weeksBetween + " weeks ago.");
-                            offlinePlayer.setWhitelisted(false);
-                            removedPlayersCounter++;
-                        }
-                        removedPlayers.add(playerUsername);
-                        removedPlayersUUID.add(uuid);
-                    }
-                    break;
-                }
-                case "d": {
-                    // calc how many days they haven't played for
-                    long daysBetween = getDaysBetween(lastPlayed, new Date());
-                    // if they are too inactive, remove them
-                    if (daysBetween >= duration) {
-                        if (actuallyRemove) {
-                            autoWhitelistRemove.logger.info("Removing player " + playerUsername
-                                    + " from the whitelist! They haven't played in over " + duration
-                                    + " days! Last online: " + daysBetween + " days ago.");
-                            offlinePlayer.setWhitelisted(false);
-                            removedPlayersCounter++;
-                        }
-                        removedPlayers.add(playerUsername);
-                        removedPlayersUUID.add(uuid);
-                    }
-                    break;
-                }
-                case "m": {
-                    // calc how many months they haven't played for
-                    long monthsBetween = getMonthsBetween(lastPlayed, new Date());
-                    // if they are too inactive, remove them
-                    if (monthsBetween >= duration) {
-                        if (actuallyRemove) {
-                            autoWhitelistRemove.logger.info("Removing player " + playerUsername
-                                    + " from the whitelist! They haven't played in over " + duration
-                                    + " months! Last online: " + monthsBetween + " months ago.");
-                            offlinePlayer.setWhitelisted(false);
-                            removedPlayersCounter++;
-                        }
-                        removedPlayers.add(playerUsername);
-                        removedPlayersUUID.add(uuid);
-                    }
-                    break;
-                }
-                default: {
-                    // if the config syntax is wrong, then this is the safe way of telling the user it's wrong
-                    autoWhitelistRemove.logger.warning(
-                            "Invalid time duration " + timeType + "! Please check your config!");
-                }
+            boolean inactive = isPlayerInactive(offlinePlayer, inactivePeriod);
+            if (inactive) {
+                inactivePlayersCounter++;
+                inactivePlayersName.add(offlinePlayer.getName());
+                inactivePlayers.add(offlinePlayer);
             }
         }
+
         if (actuallyRemove) {
-            autoWhitelistRemove.logger.info("Removed " + removedPlayersCounter + " players.");
+            autoWhitelistRemove.logger.info(inactivePlayersCounter + " players are going to be removed.");
+            removePlayers(inactivePlayers);
         } else {
-            autoWhitelistRemove.logger.info(removedPlayersCounter + " players can be removed.");
+            autoWhitelistRemove.logger.info(inactivePlayersCounter + " players can be removed.");
         }
 
-        // export the removed players if we actually removed any
-        if (!removedPlayers.isEmpty() && actuallyRemove) {
-            if (autoWhitelistRemove.config.getBoolean("save-whitelist-removals")) {
-                exportPlayers(removedPlayersUUID);
-            }
+        return inactivePlayersName;
+    }
+
+    /**
+     * Remove these players from the whitelist.
+     *
+     * @param playersToRemove List of players to remove.
+     */
+    private void removePlayers(Set<OfflinePlayer> playersToRemove) {
+        for (OfflinePlayer offlinePlayer : playersToRemove) {
+            offlinePlayer.setWhitelisted(false);
         }
-        return removedPlayers;
     }
 
     /**
@@ -204,6 +156,69 @@ public class WhitelistCheck {
     public long getMonthsBetween(Date d1, Date d2) {
         return ChronoUnit.MONTHS.between(
                 d1.toInstant().atZone(ZoneId.systemDefault()), d2.toInstant().atZone(ZoneId.systemDefault()));
+    }
+
+    /**
+     * Check to see if a player has been inactive.
+     *
+     * @param playerToCheck  The player to check.
+     * @param inactivePeriod The time duration of being inactive. 3d, 2m, 4w.
+     * @return If the player is not active in the given duration.
+     */
+    private boolean isPlayerInactive(OfflinePlayer playerToCheck, String inactivePeriod) {
+        String playerUsername = playerToCheck.getName();
+        String timeType = inactivePeriod.substring(inactivePeriod.length() - 1);
+        // get when they lasted played
+        Date lastPlayed = new Date(playerToCheck.getLastPlayed());
+        // get how long they have to be offline
+        int duration = Integer.parseInt(inactivePeriod.substring(0, inactivePeriod.length() - 1));
+
+        // check if we are using weeks/days/months for the time period
+        // there is probably a better way of doing this, but this is a safe way
+        switch (timeType) {
+            case "w": {
+                // calc how many weeks they haven't played for
+                long weeksBetween = getWeeksBetween(lastPlayed, new Date());
+                // if they are too inactive, remove them
+                if (weeksBetween >= duration) {
+                    autoWhitelistRemove.logger.info(playerUsername
+                            + " can be removed! They haven't played in over " + duration
+                            + " weeks! Last online: " + weeksBetween + " weeks ago.");
+                    return true;
+                }
+                break;
+            }
+            case "d": {
+                // calc how many days they haven't played for
+                long daysBetween = getDaysBetween(lastPlayed, new Date());
+                // if they are too inactive, remove them
+                if (daysBetween >= duration) {
+                    autoWhitelistRemove.logger.info(playerUsername
+                            + " can be removed! They haven't played in over " + duration
+                            + " days! Last online: " + daysBetween + " days ago.");
+                    return true;
+                }
+                break;
+            }
+            case "m": {
+                // calc how many months they haven't played for
+                long monthsBetween = getMonthsBetween(lastPlayed, new Date());
+                // if they are too inactive, remove them
+                if (monthsBetween >= duration) {
+                    autoWhitelistRemove.logger.info(playerUsername
+                            + " can be removed! They haven't played in over " + duration
+                            + " months! Last online: " + monthsBetween + " months ago.");
+                    return true;
+                }
+                break;
+            }
+            default: {
+                // if the config syntax is wrong, then this is the safe way of telling the user it's wrong
+                autoWhitelistRemove.logger.warning(
+                        "Invalid time duration " + timeType + "! Please check your config!");
+            }
+        }
+        return false;
     }
 
     /**
