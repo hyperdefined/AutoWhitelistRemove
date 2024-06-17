@@ -5,6 +5,7 @@ api-version: 1.13
 author: hyperdefined
 website: https://www.spigotmc.org/resources/autowhitelistremove.93326/
 description: Automatically remove inactive players from your whitelist!
+folia-supported: true
 permissions:
   autowhitelistremove.check:
     default: op
