@@ -117,9 +117,11 @@ public class WhitelistCheck {
      * @param playersToRemove List of players to remove.
      */
     private void removePlayers(Set<OfflinePlayer> playersToRemove) {
-        for (OfflinePlayer offlinePlayer : playersToRemove) {
-            offlinePlayer.setWhitelisted(false);
-        }
+        Bukkit.getGlobalRegionScheduler().run(autoWhitelistRemove, t -> {
+            for (OfflinePlayer offlinePlayer : playersToRemove) {
+                offlinePlayer.setWhitelisted(false);
+            }
+        });
 
         if (autoWhitelistRemove.config.getBoolean("save-whitelist-removals")) {
             exportPlayers(playersToRemove);
