@@ -79,7 +79,7 @@ public final class AutoWhitelistRemove extends JavaPlugin {
             e.printStackTrace();
             return;
         }
-        GitHubRelease current = api.getReleaseByTag(this.getDescription().getVersion());
+        GitHubRelease current = api.getReleaseByTag(this.getPluginMeta().getVersion());
         GitHubRelease latest = api.getLatestVersion();
         if (current == null) {
             logger.warning("You are running a version that does not exist on GitHub. If you are in a dev environment, you can ignore this. Otherwise, this is a bug!");
