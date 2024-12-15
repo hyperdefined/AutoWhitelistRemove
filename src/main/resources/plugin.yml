@@ -3,7 +3,7 @@ version: ${project.version}
 main: lol.hyper.autowhitelistremove.AutoWhitelistRemove
 api-version: 1.21
 author: hyperdefined
-website: https://www.spigotmc.org/resources/autowhitelistremove.93326/
+website: https://github.com/hyperdefined/AutoWhitelistRemove/
 description: Automatically remove inactive players from your whitelist!
 permissions:
   autowhitelistremove.check:
