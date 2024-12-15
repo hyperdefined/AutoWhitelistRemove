@@ -21,7 +21,6 @@ import lol.hyper.autowhitelistremove.command.CommandAWR;
 import lol.hyper.autowhitelistremove.tools.WhitelistCheck;
 import lol.hyper.githubreleaseapi.GitHubRelease;
 import lol.hyper.githubreleaseapi.GitHubReleaseAPI;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -40,11 +39,9 @@ public final class AutoWhitelistRemove extends JavaPlugin {
     public FileConfiguration config;
     public WhitelistCheck whitelistCheck;
     public CommandAWR commandAWR;
-    private BukkitAudiences adventure;
 
     @Override
     public void onEnable() {
-        adventure = BukkitAudiences.create(this);
         whitelistCheck = new WhitelistCheck(this);
         commandAWR = new CommandAWR(this);
         this.getCommand("awr").setExecutor(commandAWR);
@@ -55,7 +52,7 @@ public final class AutoWhitelistRemove extends JavaPlugin {
 
         new Metrics(this, 11684);
 
-        Bukkit.getScheduler().runTaskAsynchronously(this, this::checkForUpdates);
+        Bukkit.getAsyncScheduler().runNow(this, scheduledTask -> checkForUpdates());
     }
 
     public void loadConfig() {
@@ -94,12 +91,5 @@ public final class AutoWhitelistRemove extends JavaPlugin {
         } else {
             logger.warning("A new version is available (" + latest.getTagVersion() + ")! You are running version " + current.getTagVersion() + ". You are " + buildsBehind + " version(s) behind.");
         }
-    }
-
-    public BukkitAudiences getAdventure() {
-        if(this.adventure == null) {
-            throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
-        }
-        return this.adventure;
     }
 }

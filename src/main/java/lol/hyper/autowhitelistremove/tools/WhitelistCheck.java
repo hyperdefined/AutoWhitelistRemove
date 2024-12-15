@@ -76,7 +76,7 @@ public class WhitelistCheck {
             String playerUsername = offlinePlayer.getName();
 
             // skip players that have not logged in
-            if (!offlinePlayer.hasPlayedBefore() || offlinePlayer.getLastPlayed() == 0) {
+            if (!offlinePlayer.hasPlayedBefore() || offlinePlayer.getLastLogin() == 0) {
                 autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " since they have not played yet.");
                 continue;
             }
@@ -173,7 +173,7 @@ public class WhitelistCheck {
         String playerUsername = playerToCheck.getName();
         String timeType = inactivePeriod.substring(inactivePeriod.length() - 1);
         // get when they lasted played
-        Date lastPlayed = new Date(playerToCheck.getLastPlayed());
+        Date lastPlayed = new Date(playerToCheck.getLastLogin());
         // get how long they have to be offline
         int duration = Integer.parseInt(inactivePeriod.substring(0, inactivePeriod.length() - 1));
 
