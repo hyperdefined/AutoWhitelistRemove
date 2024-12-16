@@ -64,7 +64,7 @@ public class WhitelistCheck {
         String inactivePeriod = autoWhitelistRemove.config.getString("inactive-period");
         if (inactivePeriod == null) {
             autoWhitelistRemove.logger.warning("inactive-period is NOT SET!");
-            return null;
+            return Collections.emptySet();
         }
         autoWhitelistRemove.logger.info("Checking for inactive players...");
         autoWhitelistRemove.logger.info("Current duration is set to " + inactivePeriod);
