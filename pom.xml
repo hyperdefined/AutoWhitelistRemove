@@ -23,7 +23,7 @@
 
     <groupId>lol.hyper</groupId>
     <artifactId>autowhitelistremove</artifactId>
-    <version>1.2.3</version>
+    <version>1.2.4</version>
     <packaging>jar</packaging>
 
     <name>AutoWhitelistRemove</name>
@@ -75,10 +75,6 @@
                             <pattern>lol.hyper.githubreleaseapi</pattern>
                             <shadedPattern>lol.hyper.autowhitelistremove.updater</shadedPattern>
                         </relocation>
-                        <relocation>
-                            <pattern>net.kyori</pattern>
-                            <shadedPattern>lol.hyper.autowhitelistremove.adventure</shadedPattern>
-                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
@@ -105,7 +101,7 @@
     <repositories>
         <repository>
             <id>papermc</id>
-            <url>https://papermc.io/repo/repository/maven-public/</url>
+            <url>https://repo.papermc.io/repository/maven-public</url>
         </repository>
     </repositories>
 
@@ -113,7 +109,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.20.6-R0.1-SNAPSHOT</version>
+            <version>1.21.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -125,25 +121,13 @@
         <dependency>
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
-            <version>3.0.3</version>
+            <version>3.1.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>lol.hyper</groupId>
             <artifactId>github-release-api</artifactId>
             <version>1.0.5</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-minimessage</artifactId>
-            <version>4.17.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-platform-bukkit</artifactId>
-            <version>4.3.4</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
