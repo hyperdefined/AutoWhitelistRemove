@@ -48,20 +48,12 @@ public final class AutoWhitelistRemove extends JavaPlugin {
         this.getCommand("awr").setExecutor(commandAWR);
         loadConfig();
         if (config.getBoolean("autoremove-on-start")) {
-<<<<<<< HEAD
-            Bukkit.getAsyncScheduler().runDelayed(this, t -> whitelistCheck.checkWhitelist(true), 50L, TimeUnit.MILLISECONDS);
-=======
             Bukkit.getGlobalRegionScheduler().runDelayed(this, scheduledTask -> whitelistCheck.checkWhitelist(true), 50);
->>>>>>> 6e17ea34e075c8952bd24c30b43ace69c136a470
         }
 
         new Metrics(this, 11684);
 
-<<<<<<< HEAD
-        Bukkit.getAsyncScheduler().runNow(this, t -> this.checkForUpdates());
-=======
         Bukkit.getAsyncScheduler().runNow(this, scheduledTask -> checkForUpdates());
->>>>>>> 6e17ea34e075c8952bd24c30b43ace69c136a470
     }
 
     public void loadConfig() {
