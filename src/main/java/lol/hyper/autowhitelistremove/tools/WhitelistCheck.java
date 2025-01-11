@@ -18,8 +18,10 @@
 package lol.hyper.autowhitelistremove.tools;
 
 import lol.hyper.autowhitelistremove.AutoWhitelistRemove;
+import net.ess3.api.IUser;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -74,30 +76,34 @@ public class WhitelistCheck {
         for (OfflinePlayer offlinePlayer : Bukkit.getWhitelistedPlayers()) {
             UUID uuid = offlinePlayer.getUniqueId();
             String playerUsername = offlinePlayer.getName();
+            IUser user = autoWhitelistRemove.hookAPIEssentials().getUser(uuid);
 
-            // skip players that have not logged in
-            if (!offlinePlayer.hasPlayedBefore() || offlinePlayer.getLastLogin() == 0) {
-                autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " since they have not played yet.");
-                continue;
-            }
+            if (user != null) {
+                // skip players that have not logged in
+                if (!offlinePlayer.hasPlayedBefore() || offlinePlayer.getLastLogin() == 0) {
+                    offlinePlayer.setWhitelisted(false);
+                    autoWhitelistRemove.logger.info("Player " + playerUsername + " removed from whitelist since they have not played yet.");
+                    continue;
+                }
 
-            // skip if their UUID is on the ignored list
-            if (autoWhitelistRemove.config.getStringList("ignored-players").contains(uuid.toString())) {
-                autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " because they are on the ignored list.");
-                continue;
-            }
+                // skip if their UUID is on the ignored list
+                if (autoWhitelistRemove.config.getStringList("ignored-players").contains(uuid.toString())) {
+                    autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " because they are on the ignored list.");
+                    continue;
+                }
 
-            // skip if their name is on the ignored list
-            if (autoWhitelistRemove.config.getStringList("ignored-players").contains(playerUsername)) {
-                autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " because they are on the ignored list.");
-                continue;
-            }
+                // skip if their name is on the ignored list
+                if (autoWhitelistRemove.config.getStringList("ignored-players").contains(playerUsername)) {
+                    autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " because they are on the ignored list.");
+                    continue;
+                }
 
-            boolean inactive = isPlayerInactive(offlinePlayer, inactivePeriod);
-            if (inactive) {
-                inactivePlayersCounter++;
-                inactivePlayersName.add(offlinePlayer.getName());
-                inactivePlayers.add(offlinePlayer);
+                boolean inactive = isPlayerInactive(offlinePlayer, inactivePeriod);
+                if (inactive) {
+                    inactivePlayersCounter++;
+                    inactivePlayersName.add(offlinePlayer.getName());
+                    inactivePlayers.add(offlinePlayer);
+                }
             }
         }
 
@@ -135,7 +141,7 @@ public class WhitelistCheck {
      * @param d2 The more recent date.
      * @return The total weeks that have passed.
      */
-    public long getWeeksBetween(Date d1, Date d2) {
+    public long getWeeksBetween(@NotNull Date d1, @NotNull Date d2) {
         return ChronoUnit.WEEKS.between(
                 d1.toInstant().atZone(ZoneId.systemDefault()), d2.toInstant().atZone(ZoneId.systemDefault()));
     }
@@ -147,7 +153,7 @@ public class WhitelistCheck {
      * @param d2 The more recent date.
      * @return The total days that have passed.
      */
-    public long getDaysBetween(Date d1, Date d2) {
+    public long getDaysBetween(@NotNull Date d1, @NotNull Date d2) {
         return ChronoUnit.DAYS.between(
                 d1.toInstant().atZone(ZoneId.systemDefault()), d2.toInstant().atZone(ZoneId.systemDefault()));
     }
@@ -159,7 +165,7 @@ public class WhitelistCheck {
      * @param d2 The more recent date.
      * @return The total months that have passed.
      */
-    public long getMonthsBetween(Date d1, Date d2) {
+    public long getMonthsBetween(@NotNull Date d1, @NotNull Date d2) {
         return ChronoUnit.MONTHS.between(
                 d1.toInstant().atZone(ZoneId.systemDefault()), d2.toInstant().atZone(ZoneId.systemDefault()));
     }
@@ -171,7 +177,7 @@ public class WhitelistCheck {
      * @param inactivePeriod The time duration of being inactive. 3d, 2m, 4w.
      * @return If the player is not active in the given duration.
      */
-    private boolean isPlayerInactive(OfflinePlayer playerToCheck, String inactivePeriod) {
+    private boolean isPlayerInactive(@NotNull OfflinePlayer playerToCheck, @NotNull String inactivePeriod) {
         String playerUsername = playerToCheck.getName();
         String timeType = inactivePeriod.substring(inactivePeriod.length() - 1);
         // get when they lasted played
