@@ -10,6 +10,13 @@ ignored-players:
 # Example: 2w, 15d, 1m
 inactive-period: "30d"
 
+# When a player is removed from being inactive, run these commands as well.
+# %player% - player's name, might be wrong if they changed it!
+# %uuid% - player's UUID.
+extra-commands:
+#- ban %player%
+#- ban %uuid%
+
 # Do you want to check inactive players when the server starts up?
 # This will auto remove them.
 autoremove-on-start: true
@@ -18,4 +25,4 @@ autoremove-on-start: true
 # This will create removals.json
 save-whitelist-removals: true
 
-config-version: 2
+config-version: 3

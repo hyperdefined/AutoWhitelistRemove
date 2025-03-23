@@ -6,6 +6,9 @@ author: hyperdefined
 website: https://github.com/hyperdefined/AutoWhitelistRemove/
 description: Automatically remove inactive players from your whitelist!
 permissions:
+  autowhitelistremove.ignore:
+    default: op
+    description: Allows the usage of /awr ignore.
   autowhitelistremove.check:
     default: op
     description: Allows the usage of /awr check.

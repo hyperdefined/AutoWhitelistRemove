@@ -21,15 +21,15 @@ import lol.hyper.autowhitelistremove.AutoWhitelistRemove;
 import lol.hyper.autowhitelistremove.tools.WhitelistCheck;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 
 public class CommandAWR implements TabExecutor {
 
@@ -93,6 +93,83 @@ public class CommandAWR implements TabExecutor {
                     sender.sendMessage(Component.text(String.join(", ", removedPlayers), NamedTextColor.YELLOW));
                 }
                 sender.sendMessage(Component.text("--------------------------------------------", NamedTextColor.GOLD));
+                break;
+            }
+            case "ignore": {
+                if (!sender.hasPermission("autowhitelistremove.ignore")) {
+                    sender.sendMessage(Component.text("You do not have permission for this command.", NamedTextColor.RED));
+                    return true;
+                }
+                autoWhitelistRemove.logger.info(String.valueOf(args.length));
+                if (args.length == 1) {
+                    sender.sendMessage(Component.text("You must specify an action, 'add' or 'remove'.", NamedTextColor.RED));
+                    return true;
+                }
+                if (args[1].equalsIgnoreCase("add")) {
+                    if (args.length == 2) {
+                        sender.sendMessage(Component.text("You must specify a UUID to add.", NamedTextColor.RED));
+                        return true;
+                    }
+                    String toAdd = args[2];
+                    try {
+                        UUID temp = UUID.fromString(toAdd);
+                        toAdd = temp.toString();
+                    } catch (IllegalArgumentException ignored) {
+                        // if the input is not a UUID, assume it's a player
+                        Player player = Bukkit.getPlayerExact(toAdd);
+                        toAdd = player.getUniqueId().toString();
+                    }
+
+                    List<String> ignoredPlayers = autoWhitelistRemove.config.getStringList("ignored-players");
+                    if (ignoredPlayers.contains(toAdd)) {
+                        sender.sendMessage(Component.text("This player is already ignored.", NamedTextColor.RED));
+                        return true;
+                    }
+
+                    ignoredPlayers.add(toAdd);
+                    autoWhitelistRemove.config.set("ignored-players", ignoredPlayers);
+                    try {
+                        autoWhitelistRemove.config.save(autoWhitelistRemove.configFile);
+                        sender.sendMessage(Component.text("Added UUID " + toAdd + " to whitelist.", NamedTextColor.GREEN));
+                    } catch (IOException exception) {
+                        autoWhitelistRemove.logger.severe("Unable to save config!");
+                        exception.printStackTrace();
+                    }
+                    return true;
+                }
+                if (args[1].equalsIgnoreCase("remove")) {
+                    if (args.length == 2) {
+                        sender.sendMessage(Component.text("You must specify a UUID to remove.", NamedTextColor.RED));
+                        return true;
+                    }
+                    String toRemove = args[2];
+                    try {
+                        UUID temp = UUID.fromString(toRemove);
+                        toRemove = temp.toString();
+                    } catch (IllegalArgumentException ignored) {
+                        // if the input is not a UUID, assume it's a player
+                        Player player = Bukkit.getPlayerExact(toRemove);
+                        toRemove = player.getUniqueId().toString();
+                    }
+
+                    List<String> ignoredPlayers = autoWhitelistRemove.config.getStringList("ignored-players");
+                    if (!ignoredPlayers.contains(toRemove)) {
+                        sender.sendMessage(Component.text("This player is not ignored, can't remove", NamedTextColor.RED));
+                        return true;
+                    }
+
+                    ignoredPlayers.remove(toRemove);
+                    autoWhitelistRemove.config.set("ignored-players", ignoredPlayers);
+                    try {
+                        autoWhitelistRemove.config.save(autoWhitelistRemove.configFile);
+                        sender.sendMessage(Component.text("Removed UUID " + toRemove + " from whitelist.", NamedTextColor.GREEN));
+                    } catch (IOException exception) {
+                        autoWhitelistRemove.logger.severe("Unable to save config!");
+                        exception.printStackTrace();
+                    }
+                    return true;
+                }
+                sender.sendMessage(Component.text("This is not a valid action for 'ignore'.", NamedTextColor.RED));
                 break;
             }
             case "reload": {
