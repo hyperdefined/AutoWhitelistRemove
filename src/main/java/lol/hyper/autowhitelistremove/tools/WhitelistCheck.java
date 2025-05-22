@@ -123,8 +123,21 @@ public class WhitelistCheck {
      * @param playersToRemove List of players to remove.
      */
     private void removePlayers(Set<OfflinePlayer> playersToRemove) {
+        List<String> commands = autoWhitelistRemove.config.getStringList("extra-commands");
         Bukkit.getGlobalRegionScheduler().run(autoWhitelistRemove, t -> {
             for (OfflinePlayer offlinePlayer : playersToRemove) {
+                if (!commands.isEmpty()) {
+                    for (String command : commands) {
+                        String finalCommand = command;
+                        if (command.contains("%player%")) {
+                            finalCommand = command.replace("%player%", offlinePlayer.getName());
+                        }
+                        if (command.contains("%uuid%")) {
+                            finalCommand = command.replace("%uuid%", offlinePlayer.getUniqueId().toString());
+                        }
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand);
+                    }
+                }
                 offlinePlayer.setWhitelisted(false);
             }
         });
