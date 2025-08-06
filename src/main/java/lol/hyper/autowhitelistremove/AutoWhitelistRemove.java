@@ -19,21 +19,20 @@ package lol.hyper.autowhitelistremove;
 
 import lol.hyper.autowhitelistremove.command.CommandAWR;
 import lol.hyper.autowhitelistremove.tools.WhitelistCheck;
-import lol.hyper.githubreleaseapi.GitHubRelease;
-import lol.hyper.githubreleaseapi.GitHubReleaseAPI;
-import org.bstats.bukkit.Metrics;
+import lol.hyper.hyperlib.HyperLib;
+import lol.hyper.hyperlib.bstats.HyperStats;
+import lol.hyper.hyperlib.releases.HyperUpdater;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.logging.Logger;
 
 public final class AutoWhitelistRemove extends JavaPlugin {
 
-    public final Logger logger = this.getLogger();
+    public final ComponentLogger logger = this.getComponentLogger();
     public final File configFile = new File(this.getDataFolder(), "config.yml");
     public final File removalsFile = new File(this.getDataFolder(), "removals.json");
     public FileConfiguration config;
@@ -42,6 +41,12 @@ public final class AutoWhitelistRemove extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        HyperLib hyperLib = new HyperLib(this);
+        hyperLib.setup();
+
+        HyperStats stats = new HyperStats(hyperLib, 11684);
+        stats.setup();
+
         whitelistCheck = new WhitelistCheck(this);
         commandAWR = new CommandAWR(this);
         this.getCommand("awr").setExecutor(commandAWR);
@@ -50,9 +55,11 @@ public final class AutoWhitelistRemove extends JavaPlugin {
             Bukkit.getGlobalRegionScheduler().runDelayed(this, scheduledTask -> whitelistCheck.checkWhitelist(true), 50);
         }
 
-        new Metrics(this, 11684);
-
-        Bukkit.getAsyncScheduler().runNow(this, scheduledTask -> checkForUpdates());
+        HyperUpdater updater = new HyperUpdater(hyperLib);
+        updater.setGitHub("hyperdefined", "AutoWhitelistRemove");
+        updater.setModrinth("YLFgSRDy");
+        updater.setHangar("AutoWhitelistRemove", "paper");
+        updater.check();
     }
 
     public void loadConfig() {
@@ -62,34 +69,11 @@ public final class AutoWhitelistRemove extends JavaPlugin {
         config = YamlConfiguration.loadConfiguration(configFile);
         int CONFIG_VERSION = 3;
         if (config.getInt("config-version") != CONFIG_VERSION) {
-            logger.warning("Your configuration is out of date! Some features may not work!");
+            logger.warn("Your configuration is out of date! Some features may not work!");
         }
         boolean isCorrect = whitelistCheck.verifyTimeDuration(config.getString("inactive-period"));
         if (!isCorrect) {
-            logger.warning("The time duration currently set is not valid! This will break everything!");
-        }
-    }
-
-    public void checkForUpdates() {
-        GitHubReleaseAPI api;
-        try {
-            api = new GitHubReleaseAPI("AutoWhitelistRemove", "hyperdefined");
-        } catch (IOException e) {
-            logger.warning("Unable to check updates!");
-            e.printStackTrace();
-            return;
-        }
-        GitHubRelease current = api.getReleaseByTag(this.getPluginMeta().getVersion());
-        GitHubRelease latest = api.getLatestVersion();
-        if (current == null) {
-            logger.warning("You are running a version that does not exist on GitHub. If you are in a dev environment, you can ignore this. Otherwise, this is a bug!");
-            return;
-        }
-        int buildsBehind = api.getBuildsBehind(current);
-        if (buildsBehind == 0) {
-            logger.info("You are running the latest version.");
-        } else {
-            logger.warning("A new version is available (" + latest.getTagVersion() + ")! You are running version " + current.getTagVersion() + ". You are " + buildsBehind + " version(s) behind.");
+            logger.warn("The time duration currently set is not valid! This will break everything!");
         }
     }
 }

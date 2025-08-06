@@ -42,7 +42,7 @@ public class CommandAWR implements TabExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (!sender.hasPermission("autowhitelistremove.command")) {
             sender.sendMessage(Component.text("You do not have permission for this command.", NamedTextColor.RED));
             return true;
@@ -132,8 +132,7 @@ public class CommandAWR implements TabExecutor {
                         autoWhitelistRemove.config.save(autoWhitelistRemove.configFile);
                         sender.sendMessage(Component.text("Added UUID " + toAdd + " to whitelist.", NamedTextColor.GREEN));
                     } catch (IOException exception) {
-                        autoWhitelistRemove.logger.severe("Unable to save config!");
-                        exception.printStackTrace();
+                        autoWhitelistRemove.logger.error("Unable to save config!", exception);
                     }
                     return true;
                 }
@@ -164,8 +163,7 @@ public class CommandAWR implements TabExecutor {
                         autoWhitelistRemove.config.save(autoWhitelistRemove.configFile);
                         sender.sendMessage(Component.text("Removed UUID " + toRemove + " from whitelist.", NamedTextColor.GREEN));
                     } catch (IOException exception) {
-                        autoWhitelistRemove.logger.severe("Unable to save config!");
-                        exception.printStackTrace();
+                        autoWhitelistRemove.logger.error("Unable to save config!", exception);
                     }
                     return true;
                 }

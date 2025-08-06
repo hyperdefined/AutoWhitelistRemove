@@ -18,12 +18,12 @@
 package lol.hyper.autowhitelistremove.tools;
 
 import lol.hyper.autowhitelistremove.AutoWhitelistRemove;
+import lol.hyper.hyperlib.utils.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
@@ -63,11 +63,11 @@ public class WhitelistCheck {
 
         String inactivePeriod = autoWhitelistRemove.config.getString("inactive-period");
         if (inactivePeriod == null) {
-            autoWhitelistRemove.logger.warning("inactive-period is NOT SET!");
+            autoWhitelistRemove.logger.warn("inactive-period is NOT SET!");
             return Collections.emptySet();
         }
         autoWhitelistRemove.logger.info("Checking for inactive players...");
-        autoWhitelistRemove.logger.info("Current duration is set to " + inactivePeriod);
+        autoWhitelistRemove.logger.info("Current duration is set to {}", inactivePeriod);
 
         int inactivePlayersCounter = 0;
         // go through each player on the whitelist
@@ -77,19 +77,19 @@ public class WhitelistCheck {
 
             // skip players that have not logged in
             if (!offlinePlayer.hasPlayedBefore() || offlinePlayer.getLastLogin() == 0) {
-                autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " since they have not played yet.");
+                autoWhitelistRemove.logger.info("Skipping player {} since they have not played yet.", playerUsername);
                 continue;
             }
 
             // skip if their UUID is on the ignored list
             if (autoWhitelistRemove.config.getStringList("ignored-players").contains(uuid.toString())) {
-                autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " because they are on the ignored list.");
+                autoWhitelistRemove.logger.info("Skipping player {} because their UUID is on the ignored list.", playerUsername);
                 continue;
             }
 
             // skip if their name is on the ignored list
             if (autoWhitelistRemove.config.getStringList("ignored-players").contains(playerUsername)) {
-                autoWhitelistRemove.logger.info("Skipping player " + playerUsername + " because they are on the ignored list.");
+                autoWhitelistRemove.logger.info("Skipping player {} because their name is on the ignored list.", playerUsername);
                 continue;
             }
 
@@ -102,10 +102,10 @@ public class WhitelistCheck {
         }
 
         if (actuallyRemove) {
-            autoWhitelistRemove.logger.info(inactivePlayersCounter + " players are going to be removed.");
+            autoWhitelistRemove.logger.info("{} players are going to be removed.", inactivePlayersCounter);
             removePlayers(inactivePlayers);
         } else {
-            autoWhitelistRemove.logger.info(inactivePlayersCounter + " players can be removed.");
+            autoWhitelistRemove.logger.info("{} players can be removed.", inactivePlayersCounter);
         }
 
         return inactivePlayersName;
@@ -198,9 +198,7 @@ public class WhitelistCheck {
                 long weeksBetween = getWeeksBetween(lastPlayed, new Date());
                 // if they are too inactive, remove them
                 if (weeksBetween >= duration) {
-                    autoWhitelistRemove.logger.info(playerUsername
-                            + " can be removed! They haven't played in over " + duration
-                            + " weeks! Last online: " + weeksBetween + " weeks ago.");
+                    autoWhitelistRemove.logger.info("{} can be removed! They haven't played in over {} weeks! Last online: {} weeks ago.", playerUsername, duration, weeksBetween);
                     return true;
                 }
                 break;
@@ -210,9 +208,7 @@ public class WhitelistCheck {
                 long daysBetween = getDaysBetween(lastPlayed, new Date());
                 // if they are too inactive, remove them
                 if (daysBetween >= duration) {
-                    autoWhitelistRemove.logger.info(playerUsername
-                            + " can be removed! They haven't played in over " + duration
-                            + " days! Last online: " + daysBetween + " days ago.");
+                    autoWhitelistRemove.logger.info("{} can be removed! They haven't played in over {} days! Last online: {} days ago.", playerUsername, duration, daysBetween);
                     return true;
                 }
                 break;
@@ -222,64 +218,17 @@ public class WhitelistCheck {
                 long monthsBetween = getMonthsBetween(lastPlayed, new Date());
                 // if they are too inactive, remove them
                 if (monthsBetween >= duration) {
-                    autoWhitelistRemove.logger.info(playerUsername
-                            + " can be removed! They haven't played in over " + duration
-                            + " months! Last online: " + monthsBetween + " months ago.");
+                    autoWhitelistRemove.logger.info("{} can be removed! They haven't played in over {} months! Last online: {} months ago.", playerUsername, duration, monthsBetween);
                     return true;
                 }
                 break;
             }
             default: {
                 // if the config syntax is wrong, then this is the safe way of telling the user it's wrong
-                autoWhitelistRemove.logger.warning(
-                        "Invalid time duration " + timeType + "! Please check your config!");
+                autoWhitelistRemove.logger.warn("Invalid time duration {}! Please check your config!", timeType);
             }
         }
         return false;
-    }
-
-    /**
-     * Read contents of a file stored as a JSONArray.
-     *
-     * @param file File to read data from.
-     * @return JSONArray from said file.
-     */
-    private JSONArray readFile(File file) {
-        JSONArray object = null;
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-            while (line != null) {
-                sb.append(line);
-                line = br.readLine();
-            }
-            object = new JSONArray(sb.toString());
-            br.close();
-        } catch (Exception e) {
-            autoWhitelistRemove.logger.severe("Unable to read file " + file.getAbsolutePath());
-            autoWhitelistRemove.logger.severe("This is bad, really bad.");
-            e.printStackTrace();
-        }
-        return object;
-    }
-
-    /**
-     * Write data to JSON file.
-     *
-     * @param file        File to write data to.
-     * @param jsonToWrite Data to write to file. This much be a JSON string.
-     */
-    private void writeFile(File file, String jsonToWrite) {
-        try {
-            FileWriter writer = new FileWriter(file);
-            writer.write(jsonToWrite);
-            writer.close();
-        } catch (IOException e) {
-            autoWhitelistRemove.logger.severe("Unable to write file " + file.getAbsolutePath());
-            autoWhitelistRemove.logger.severe("This is bad, really bad.");
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -288,12 +237,13 @@ public class WhitelistCheck {
      * @param players Players to export.
      */
     private void exportPlayers(Set<OfflinePlayer> players) {
-        JSONArray array;
+        String arrayRaw;
         if (autoWhitelistRemove.removalsFile.exists()) {
-            array = readFile(autoWhitelistRemove.removalsFile);
+            arrayRaw = FileUtils.readFile(autoWhitelistRemove.removalsFile);
         } else {
-            array = new JSONArray();
+            arrayRaw = "[]";
         }
+        JSONArray array = new JSONArray(arrayRaw);
         Date date = Calendar.getInstance().getTime();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         String strDate = dateFormat.format(date);
@@ -304,6 +254,6 @@ public class WhitelistCheck {
             object.put("date", strDate);
             array.put(object);
         }
-        writeFile(autoWhitelistRemove.removalsFile, array.toString(4));
+        FileUtils.writeFile(array.toString(4), autoWhitelistRemove.removalsFile);
     }
 }
