@@ -19,7 +19,7 @@ permissions:
   autowhitelistremove.reload:
     default: op
     description: Allows the usage of /awr reload.
-  autowhitelist.command:
+  autowhitelistremove.command:
     default: op
     description: Allows the usage of /awr.
 commands:
