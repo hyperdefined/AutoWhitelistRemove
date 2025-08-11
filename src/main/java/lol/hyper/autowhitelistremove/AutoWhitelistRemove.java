@@ -30,9 +30,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 public final class AutoWhitelistRemove extends JavaPlugin {
 
@@ -58,7 +55,6 @@ public final class AutoWhitelistRemove extends JavaPlugin {
         this.getCommand("awr").setExecutor(commandAWR);
         loadConfig();
         if (config.getBoolean("autoremove-on-start")) {
-            Bukkit.getAsyncScheduler().runDelayed(this, t -> whitelistCheck.checkWhitelist(true), 50L, TimeUnit.MILLISECONDS);
             Bukkit.getGlobalRegionScheduler().runDelayed(this, scheduledTask -> whitelistCheck.checkWhitelist(true), 50);
         }
 
