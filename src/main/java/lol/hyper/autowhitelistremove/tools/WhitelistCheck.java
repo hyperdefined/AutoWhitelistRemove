@@ -105,13 +105,16 @@ public class WhitelistCheck {
                     inactivePlayers.add(offlinePlayer);
                 }
             }
-
+        }
+        if (inactivePlayersCounter > 0) {
             if (actuallyRemove) {
-                autoWhitelistRemove.logger.info("{} players are going to be removed.", inactivePlayersCounter);
+                autoWhitelistRemove.logger.info("{} players are going to be removed: {}", inactivePlayersCounter, inactivePlayersName);
                 removePlayers(inactivePlayers);
             } else {
-                autoWhitelistRemove.logger.info("{} players can be removed.", inactivePlayersCounter);
+                autoWhitelistRemove.logger.info("{} players can be removed: {}", inactivePlayersCounter, inactivePlayersName);
             }
+        } else {
+            autoWhitelistRemove.logger.info("No inactive players found.");
         }
         return inactivePlayersName;
     }
