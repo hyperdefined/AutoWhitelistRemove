@@ -17,7 +17,6 @@
 
 package lol.hyper.autowhitelistremove;
 
-import com.earth2me.essentials.Essentials;
 import lol.hyper.autowhitelistremove.command.CommandAWR;
 import lol.hyper.autowhitelistremove.tools.WhitelistCheck;
 import lol.hyper.hyperlib.HyperLib;
@@ -39,7 +38,6 @@ public final class AutoWhitelistRemove extends JavaPlugin {
     public FileConfiguration config;
     public WhitelistCheck whitelistCheck;
     public CommandAWR commandAWR;
-    private Essentials api;
 
     @Override
     public void onEnable() {
@@ -51,7 +49,6 @@ public final class AutoWhitelistRemove extends JavaPlugin {
 
         whitelistCheck = new WhitelistCheck(this);
         commandAWR = new CommandAWR(this);
-        api = (Essentials) this.getServer().getPluginManager().getPlugin("Essentials");
         this.getCommand("awr").setExecutor(commandAWR);
         loadConfig();
         if (config.getBoolean("autoremove-on-start")) {
@@ -80,7 +77,4 @@ public final class AutoWhitelistRemove extends JavaPlugin {
         }
     }
 
-    public Essentials hookAPIEssentials() {
-        return api;
-    }
 }

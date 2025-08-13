@@ -19,7 +19,6 @@ package lol.hyper.autowhitelistremove.tools;
 
 import lol.hyper.autowhitelistremove.AutoWhitelistRemove;
 import lol.hyper.hyperlib.utils.FileUtils;
-import net.ess3.api.IUser;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -74,37 +73,35 @@ public class WhitelistCheck {
         int inactivePlayersCounter = 0;
         // go through each player on the whitelist
         for (OfflinePlayer offlinePlayer : Bukkit.getWhitelistedPlayers()) {
-            UUID uuid = offlinePlayer.getUniqueId();
-            String playerUsername = offlinePlayer.getName();
-            IUser user = autoWhitelistRemove.hookAPIEssentials().getUser(uuid);
+            final UUID uuid = offlinePlayer.getUniqueId();
+            final String playerUsername = offlinePlayer.getName();
 
-            if (user != null) {
-                // skip players that have not logged in
-                if (!offlinePlayer.hasPlayedBefore() || offlinePlayer.getLastLogin() == 0) {
-                    offlinePlayer.setWhitelisted(false);
-                    autoWhitelistRemove.logger.info("Skipping player {} since they have not played yet.", playerUsername);
-                    continue;
-                }
-
-                // skip if their UUID is on the ignored list
-                if (autoWhitelistRemove.config.getStringList("ignored-players").contains(uuid.toString())) {
-                    autoWhitelistRemove.logger.info("Skipping player {} because their UUID is on the ignored list.", playerUsername);
-                    continue;
-                }
-
-                // skip if their name is on the ignored list
-                if (autoWhitelistRemove.config.getStringList("ignored-players").contains(playerUsername)) {
-                    autoWhitelistRemove.logger.info("Skipping player {} because their name is on the ignored list.", playerUsername);
-                    continue;
-                }
-
-                boolean inactive = isPlayerInactive(offlinePlayer, inactivePeriod);
-                if (inactive) {
-                    inactivePlayersCounter++;
-                    inactivePlayersName.add(offlinePlayer.getName());
-                    inactivePlayers.add(offlinePlayer);
-                }
+            // skip players that have not logged in
+            if (!offlinePlayer.hasPlayedBefore() || offlinePlayer.getLastLogin() == 0) {
+                offlinePlayer.setWhitelisted(false);
+                autoWhitelistRemove.logger.info("Skipping player {} since they have not played yet.", playerUsername);
+                continue;
             }
+
+            // skip if their UUID is on the ignored list
+            if (autoWhitelistRemove.config.getStringList("ignored-players").contains(uuid.toString())) {
+                autoWhitelistRemove.logger.info("Skipping player {} because their UUID is on the ignored list.", playerUsername);
+                continue;
+            }
+
+            // skip if their name is on the ignored list
+            if (autoWhitelistRemove.config.getStringList("ignored-players").contains(playerUsername)) {
+                autoWhitelistRemove.logger.info("Skipping player {} because their name is on the ignored list.", playerUsername);
+                continue;
+            }
+
+            boolean inactive = isPlayerInactive(offlinePlayer, inactivePeriod);
+            if (inactive) {
+                inactivePlayersCounter++;
+                inactivePlayersName.add(offlinePlayer.getName());
+                inactivePlayers.add(offlinePlayer);
+            }
+
         }
         if (inactivePlayersCounter > 0) {
             if (actuallyRemove) {
