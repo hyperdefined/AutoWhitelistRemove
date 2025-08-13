@@ -21,6 +21,7 @@ import lol.hyper.autowhitelistremove.AutoWhitelistRemove;
 import lol.hyper.hyperlib.utils.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -72,11 +73,12 @@ public class WhitelistCheck {
         int inactivePlayersCounter = 0;
         // go through each player on the whitelist
         for (OfflinePlayer offlinePlayer : Bukkit.getWhitelistedPlayers()) {
-            UUID uuid = offlinePlayer.getUniqueId();
-            String playerUsername = offlinePlayer.getName();
+            final UUID uuid = offlinePlayer.getUniqueId();
+            final String playerUsername = offlinePlayer.getName();
 
             // skip players that have not logged in
             if (!offlinePlayer.hasPlayedBefore() || offlinePlayer.getLastLogin() == 0) {
+                offlinePlayer.setWhitelisted(false);
                 autoWhitelistRemove.logger.info("Skipping player {} since they have not played yet.", playerUsername);
                 continue;
             }
@@ -99,15 +101,18 @@ public class WhitelistCheck {
                 inactivePlayersName.add(offlinePlayer.getName());
                 inactivePlayers.add(offlinePlayer);
             }
-        }
 
-        if (actuallyRemove) {
-            autoWhitelistRemove.logger.info("{} players are going to be removed.", inactivePlayersCounter);
-            removePlayers(inactivePlayers);
+        }
+        if (inactivePlayersCounter > 0) {
+            if (actuallyRemove) {
+                autoWhitelistRemove.logger.info("{} players are going to be removed: {}", inactivePlayersCounter, inactivePlayersName);
+                removePlayers(inactivePlayers);
+            } else {
+                autoWhitelistRemove.logger.info("{} players can be removed: {}", inactivePlayersCounter, inactivePlayersName);
+            }
         } else {
-            autoWhitelistRemove.logger.info("{} players can be removed.", inactivePlayersCounter);
+            autoWhitelistRemove.logger.info("No inactive players found.");
         }
-
         return inactivePlayersName;
     }
 
@@ -118,25 +123,33 @@ public class WhitelistCheck {
      */
     private void removePlayers(Set<OfflinePlayer> playersToRemove) {
         List<String> commands = autoWhitelistRemove.config.getStringList("extra-commands");
-        for (OfflinePlayer offlinePlayer : playersToRemove) {
-            if (!commands.isEmpty()) {
-                for (String command : commands) {
-                    String finalCommand = command;
-                    if (command.contains("%player%")) {
-                        finalCommand = command.replace("%player%", offlinePlayer.getName());
+        Bukkit.getGlobalRegionScheduler().run(autoWhitelistRemove, t -> {
+            for (OfflinePlayer offlinePlayer : playersToRemove) {
+                if (!commands.isEmpty()) {
+                    for (String command : commands) {
+                        String finalCommand = this.getCommand(offlinePlayer, command);
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand);
                     }
-                    if (command.contains("%uuid%")) {
-                        finalCommand = command.replace("%uuid%", offlinePlayer.getUniqueId().toString());
-                    }
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand);
                 }
+                offlinePlayer.setWhitelisted(false);
             }
-            offlinePlayer.setWhitelisted(false);
-        }
+        });
 
         if (autoWhitelistRemove.config.getBoolean("save-whitelist-removals")) {
             exportPlayers(playersToRemove);
         }
+    }
+
+    private @NotNull String getCommand(OfflinePlayer offlinePlayer, String command) {
+        String finalCommand = command;
+        if (command.contains("%player%")) {
+            final String playerName = offlinePlayer.getName() != null ? offlinePlayer.getName() : "UnknownPlayer";
+            finalCommand = command.replace("%player%", playerName);
+        }
+        if (command.contains("%uuid%")) {
+            finalCommand = command.replace("%uuid%", offlinePlayer.getUniqueId().toString());
+        }
+        return finalCommand;
     }
 
     /**
