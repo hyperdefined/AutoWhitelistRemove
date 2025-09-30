@@ -76,4 +76,5 @@ public final class AutoWhitelistRemove extends JavaPlugin {
             logger.warn("The time duration currently set is not valid! This will break everything!");
         }
     }
+
 }
