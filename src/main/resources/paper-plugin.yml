@@ -6,6 +6,9 @@ author: hyperdefined
 website: https://github.com/hyperdefined/AutoWhitelistRemove/
 description: Automatically remove inactive players from your whitelist!
 folia-supported: true
+
+loader: lol.hyper.autowhitelistremove.AWRLoader
+
 permissions:
   autowhitelistremove.ignore:
     default: op

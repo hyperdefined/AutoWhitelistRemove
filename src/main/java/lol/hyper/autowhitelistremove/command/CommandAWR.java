@@ -17,6 +17,8 @@
 
 package lol.hyper.autowhitelistremove.command;
 
+import io.papermc.paper.command.brigadier.BasicCommand;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import lol.hyper.autowhitelistremove.AutoWhitelistRemove;
 import lol.hyper.autowhitelistremove.tools.WhitelistCheck;
 import net.kyori.adventure.text.Component;
@@ -24,14 +26,14 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.util.*;
 
-public class CommandAWR implements TabExecutor {
+public class CommandAWR implements BasicCommand {
 
     private final AutoWhitelistRemove autoWhitelistRemove;
     private final WhitelistCheck whitelistCheck;
@@ -42,34 +44,34 @@ public class CommandAWR implements TabExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
+    public void execute(CommandSourceStack source, String @NonNull [] args) {
+        CommandSender sender = source.getSender();
         if (!sender.hasPermission("autowhitelistremove.command")) {
             sender.sendMessage(Component.text("You do not have permission for this command.", NamedTextColor.RED));
-            return true;
+            return;
         }
 
         if (args.length == 0) {
             sender.sendMessage(Component.text("AutoWhitelistRemove version " + autoWhitelistRemove.getPluginMeta().getVersion() + ". Created by hyperdefined.", NamedTextColor.GREEN));
-            return true;
+            return;
         }
-
 
         switch (args[0]) {
             case "check": {
                 if (!sender.hasPermission("autowhitelistremove.check")) {
                     sender.sendMessage(Component.text("You do not have permission for this command.", NamedTextColor.RED));
-                    return true;
+                    return;
                 }
 
                 if (args.length == 2) {
                     if (!args[1].equalsIgnoreCase("confirm")) {
                         sender.sendMessage(Component.text("Invalid usage. See /awr help.", NamedTextColor.RED));
-                        return true;
+                        return;
                     }
 
                     if (!sender.hasPermission("autowhitelistremove.check.confirm")) {
                         sender.sendMessage(Component.text("You do not have permission for this command.", NamedTextColor.RED));
-                        return true;
+                        return;
                     }
 
                     Set<String> removedPlayers = whitelistCheck.checkWhitelist(true);
@@ -81,7 +83,7 @@ public class CommandAWR implements TabExecutor {
                         sender.sendMessage(Component.text(String.join(", ", removedPlayers), NamedTextColor.YELLOW));
                     }
                     sender.sendMessage(Component.text("--------------------------------------------", NamedTextColor.GOLD));
-                    return true;
+                    return;
                 }
 
                 Set<String> removedPlayers = whitelistCheck.checkWhitelist(false);
@@ -98,17 +100,16 @@ public class CommandAWR implements TabExecutor {
             case "ignore": {
                 if (!sender.hasPermission("autowhitelistremove.ignore")) {
                     sender.sendMessage(Component.text("You do not have permission for this command.", NamedTextColor.RED));
-                    return true;
+                    return;
                 }
-                autoWhitelistRemove.logger.info(String.valueOf(args.length));
                 if (args.length == 1) {
                     sender.sendMessage(Component.text("You must specify an action, 'add' or 'remove'.", NamedTextColor.RED));
-                    return true;
+                    return;
                 }
                 if (args[1].equalsIgnoreCase("add")) {
                     if (args.length == 2) {
                         sender.sendMessage(Component.text("You must specify a UUID to add.", NamedTextColor.RED));
-                        return true;
+                        return;
                     }
                     String toAdd = args[2];
                     try {
@@ -123,7 +124,7 @@ public class CommandAWR implements TabExecutor {
                     List<String> ignoredPlayers = autoWhitelistRemove.config.getStringList("ignored-players");
                     if (ignoredPlayers.contains(toAdd)) {
                         sender.sendMessage(Component.text("This player is already ignored.", NamedTextColor.RED));
-                        return true;
+                        return;
                     }
 
                     ignoredPlayers.add(toAdd);
@@ -134,12 +135,12 @@ public class CommandAWR implements TabExecutor {
                     } catch (IOException exception) {
                         autoWhitelistRemove.logger.error("Unable to save config!", exception);
                     }
-                    return true;
+                    return;
                 }
                 if (args[1].equalsIgnoreCase("remove")) {
                     if (args.length == 2) {
                         sender.sendMessage(Component.text("You must specify a UUID to remove.", NamedTextColor.RED));
-                        return true;
+                        return;
                     }
                     String toRemove = args[2];
                     try {
@@ -154,7 +155,7 @@ public class CommandAWR implements TabExecutor {
                     List<String> ignoredPlayers = autoWhitelistRemove.config.getStringList("ignored-players");
                     if (!ignoredPlayers.contains(toRemove)) {
                         sender.sendMessage(Component.text("This player is not ignored, can't remove", NamedTextColor.RED));
-                        return true;
+                        return;
                     }
 
                     ignoredPlayers.remove(toRemove);
@@ -165,7 +166,7 @@ public class CommandAWR implements TabExecutor {
                     } catch (IOException exception) {
                         autoWhitelistRemove.logger.error("Unable to save config!", exception);
                     }
-                    return true;
+                    return;
                 }
                 sender.sendMessage(Component.text("This is not a valid action for 'ignore'.", NamedTextColor.RED));
                 break;
@@ -173,7 +174,7 @@ public class CommandAWR implements TabExecutor {
             case "reload": {
                 if (!sender.hasPermission("autowhitelistremove.reload")) {
                     sender.sendMessage(Component.text("You do not have permission for this command.", NamedTextColor.RED));
-                    return true;
+                    return;
                 }
                 autoWhitelistRemove.loadConfig();
                 sender.sendMessage(Component.text("Config reloaded!", NamedTextColor.GREEN));
@@ -188,16 +189,35 @@ public class CommandAWR implements TabExecutor {
                 sender.sendMessage(Component.text("--------------------------------------------").color(NamedTextColor.GOLD));
             }
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("check") && sender.hasPermission("autowhitelistremove.check.confirm")) {
-                return Collections.singletonList("confirm");
+    public String permission() {
+        return "autowhitelistremove.command";
+    }
+
+    @Override
+    public @NonNull Collection<String> suggest(@NonNull CommandSourceStack source, String[] args) {
+        CommandSender sender = source.getSender();
+        if (args.length == 0) {
+            List<String> suggestions = new ArrayList<>();
+            if (sender.hasPermission("autowhitelistremove.reload")) {
+                suggestions.add("reload");
             }
+            if (sender.hasPermission("autowhitelistremove.ignore")) {
+                suggestions.add("ignore");
+            }
+            suggestions.add("help"); // make this always there
+            return suggestions;
         }
-        return Arrays.asList("check", "help", "reload");
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("check") && sender.hasPermission("autowhitelistremove.check.confirm")) {
+            return Collections.singletonList("confirm");
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("ignore") && sender.hasPermission("autowhitelistremove.ignore")) {
+            return Arrays.asList("add", "remove");
+        }
+        return Collections.emptyList();
     }
 }
