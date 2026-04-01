@@ -31,7 +31,7 @@ public class AWRLoader implements PluginLoader {
 
         resolver.addRepository(new RemoteRepository.Builder("jitpack", "default", "https://jitpack.io").build());
         resolver.addRepository(new RemoteRepository.Builder("central", "default", MavenLibraryResolver.MAVEN_CENTRAL_DEFAULT_MIRROR).build());
-        resolver.addDependency(new Dependency(new DefaultArtifact("com.github.hyperdefined:hyperlib:1.0.9"), null));
+        resolver.addDependency(new Dependency(new DefaultArtifact("com.github.hyperdefined:hyperlib:1.0.10"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.json:json:20250517"), null));
 
         classpathBuilder.addLibrary(resolver);
