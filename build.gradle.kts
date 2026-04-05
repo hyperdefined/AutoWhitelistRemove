@@ -18,7 +18,7 @@ dependencies {
 }
 
 group = "lol.hyper"
-version = "1.0.1"
+version = "1.2.6"
 description = "AutoWhitelistRemove"
 java.sourceCompatibility = JavaVersion.VERSION_25
 
