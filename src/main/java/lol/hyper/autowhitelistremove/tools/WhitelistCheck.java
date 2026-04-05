@@ -18,12 +18,12 @@
 package lol.hyper.autowhitelistremove.tools;
 
 import lol.hyper.autowhitelistremove.AutoWhitelistRemove;
+import lol.hyper.hyperlib.shaded.json.JSONArray;
+import lol.hyper.hyperlib.shaded.json.JSONObject;
 import lol.hyper.hyperlib.utils.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
